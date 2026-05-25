@@ -53,9 +53,20 @@ local lua_expert_last = 0
 
         lua_expert_last = os.clock()
 
-        if not success or not res or res.StatusCode ~= 200 then
-            return "-- LuaExpert API Error: " .. (res and res.Body or "Unknown")
-        end
+if not success or type(res) ~= "table" then
+	return "-- Request failed"
+end
 
-        return res.Body
+local statusCode = res.StatusCode or res.status_code or res.Status or res.status
+local body = res.Body or res.body
+
+if statusCode ~= 200 then
+	return "-- API Error: " .. tostring(body or statusCode or "Unknown")
+end
+
+if type(body) ~= "string" or body == "" then
+	return "-- API returned empty body"
+end
+
+return body
     end
