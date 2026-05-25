@@ -1859,28 +1859,49 @@ do
 					end
 				end
 			end
-			if writefile then
-				writefile(CLIENT_VERSION_str, API_Dump)
-			end
+if writefile and type(API_Dump) == "string" and API_Dump ~= "" then
+	local okWrite, writeErr = pcall(writefile, CLIENT_VERSION_str, API_Dump)
+	if not okWrite then
+		warn("[DEBUG] Failed to cache API dump:", writeErr)
+	end
+end
 		end)
 
-		if not ok or not API_Dump then
-			warn("[DEBUG] Failed to get " .. version() .. " version API Dump, trying latest..")
-			warn("[DEBUG]", err)
-			API_Dump = service.HttpService:JSONEncode(
-				service.HttpService:JSONDecode(
-					game:HttpGet(
-						"https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox/Mini-API-Dump.json",
-						true
-					)
-				).Classes
-			)
+if not ok or type(API_Dump) ~= "string" or API_Dump == "" then
+	warn("[DEBUG] Failed to get " .. tostring(version()) .. " version API Dump, trying latest.")
+	warn("[DEBUG]", err)
+
+	local latestOk, latestResult = pcall(function()
+		local raw = game:HttpGet(
+			"https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox/Mini-API-Dump.json",
+			true
+		)
+
+		local decoded = service.HttpService:JSONDecode(raw)
+
+		if not decoded or type(decoded.Classes) ~= "table" then
+			error("Latest Mini-API-Dump.json has invalid format")
 		end
+
+		return service.HttpService:JSONEncode(decoded.Classes)
+	end)
+
+	if latestOk and type(latestResult) == "string" and latestResult ~= "" then
+		API_Dump = latestResult
+	else
+		warn("[DEBUG] Failed to get latest API Dump:", latestResult)
+		return nil
+	end
+end
 
 		local classList = {}
 
 		local ClassesWhitelist, ClassesBlacklist = ClassPropertyExceptions.Whitelist, ClassPropertyExceptions.Blacklist
 
+        if type(API_Dump) ~= "string" or API_Dump == "" then
+	warn("[DEBUG] API_Dump is empty; cannot build ClassList.")
+	return nil
+end
 		for _, API_Class in service.HttpService:JSONDecode(API_Dump) do
 			local ClassProperties, NotSaveableClassProperties, ClassProperties_size, NotSaveableClassProperties_size  = {}, {}, 1, 1
 			local Class = {
