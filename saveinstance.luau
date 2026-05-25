@@ -2963,21 +2963,27 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 			end
 		end
 	end
-if getscriptbytecode then
-	if OPTIONS.decomptype == "custom" then
-		warn("[DEBUG] decomptype='custom' was requested, but the Konstant fallback has been disabled in this build.")
-	elseif OPTIONS.decomptype == "luaexpert" then
-		warn("[DEBUG] decomptype='luaexpert' was requested.")
-		warn("[DEBUG] LuaExpert must be wired/exported separately. Konstant will NOT be loaded.")
-	elseif decompile == nil and OPTIONS.decomptype == "" then
-		warn("[DEBUG] No executor decompiler found and no custom decompiler selected.")
-		warn("[DEBUG] Konstant fallback disabled.")
+-- Decompiler setup
+local Decompiler = decompile
+
+if OPTIONS.decomptype == "luaexpert" then
+	local success, LuaExpert = pcall(function()
+		return loadstring(game:HttpGet("https://raw.githubusercontent.com/mitullo/BetterSaveinstance/main/Dependencies/LuaExpert.luau", true))()
+	end)
+	
+	if success and typeof(LuaExpert) == "function" then
+		Decompiler = LuaExpert
+		print("[BetterSaveInstance] ✅ LuaExpert decompiler loaded successfully")
 	else
-		warn("[DEBUG] Using existing global decompile function or non-custom decomptype:", tostring(OPTIONS.decomptype))
+		warn("[BetterSaveInstance] ❌ Failed to load LuaExpert:", LuaExpert or "unknown error")
+		Decompiler = nil
 	end
+
+elseif OPTIONS.decomptype == "custom" then
+	warn("[BetterSaveInstance] Konstant custom decompiler is currently disabled in this build.")
+	Decompiler = nil
 end
 	do
-		local Decompiler = decompile
 
 		if OPTIONS.noscripts then
 			ldecompile = function(script)
