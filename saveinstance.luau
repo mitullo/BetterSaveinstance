@@ -2292,7 +2292,7 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 		--Clipboard/CopyToClipboard = false, -- Description: If set to true, the serialized data will be set to the clipboard, which can be later pasted into studio easily. Useful for saving models. (Binary Only)
 		-- MaxThreads = 3 -- Description: The number of decompilation threads that can run at once. More threads means it can decompile for scripts at a time.
 		-- DisableCompression = false, --Description: Disables compression in the binary output
-
+        decomptype = "luaexpert",   -- new default
 		DecompileJobless = false,
 		DecompileIgnore = { -- * Clean these up (merged Old Syn and New Syn)
 			-- "Chat",
@@ -2963,15 +2963,20 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 			end
 		end
 	end
-	if getscriptbytecode then
-		if (decompile == nil and OPTIONS.decomptype == "") or OPTIONS.decomptype == "custom" then
-			if __DEBUG_MODE then __DEBUG_MODE("Attempting to load Konstant Decompiler. If there is an error/crash after this, set the option decomptype to any string other than custom") end
-			local url = "https://raw.githubusercontent.com/mitullo/BetterSaveinstance/refs/heads/main/Dependencies/Konstant%20V2.1.luau"
-			local konstant = loadstring(game:HttpGet(url, true))()
-			GLOBAL_ENV.decompile = konstant.decompile
-			if __DEBUG_MODE then __DEBUG_MODE("Konstant Decompiler loaded") end
-		end
-	end
+if getscriptbytecode then
+    if (decompile == nil and (OPTIONS.decomptype == "" or OPTIONS.decomptype == "luaexpert")) 
+   or OPTIONS.decomptype == "custom" then
+        if __DEBUG_MODE then __DEBUG_MODE("Attempting to load LuaExpert Decompiler...") end
+        
+        -- Change this to your own decompiler URL
+        local url = "https://raw.githubusercontent.com/mitullo/BetterSaveinstance/main/Dependencies/LuaExpert.luau"  -- ← YOUR FILE
+        local expert = loadstring(game:HttpGet(url, true))()
+        
+        GLOBAL_ENV.decompile = expert.decompile  -- Make sure your file returns { decompile = function... }
+        
+        if __DEBUG_MODE then __DEBUG_MODE("LuaExpert Decompiler loaded successfully") end
+    end
+end
 	do
 		local Decompiler = decompile
 
