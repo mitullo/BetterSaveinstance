@@ -70,3 +70,4 @@ end
 
 return body
     end
+return LuaExpertDecompile
