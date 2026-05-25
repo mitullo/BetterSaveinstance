@@ -1869,7 +1869,11 @@ end
 
 if not ok or type(API_Dump) ~= "string" or API_Dump == "" then
 	warn("[DEBUG] Failed to get " .. tostring(version()) .. " version API Dump, trying latest.")
-	warn("[DEBUG]", err)
+	if err ~= nil then
+	warn("[DEBUG] Primary API dump error:", err)
+else
+	warn("[DEBUG] Primary API dump returned no usable API_Dump, but no Lua error was thrown.")
+end
 
 	local latestOk, latestResult = pcall(function()
 		local raw = game:HttpGet(
