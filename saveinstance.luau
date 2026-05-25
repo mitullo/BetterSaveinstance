@@ -3,6 +3,8 @@
 --!divine-intellect
 -- https://discord.gg/wx4ThpAsmw
 
+warn("[BUILD CHECK] saveinstance.luaexpert.v3 loaded")
+
 local function string_find(s, pattern)
 	return string.find(s, pattern, nil, true)
 end
